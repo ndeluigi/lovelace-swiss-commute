@@ -102,7 +102,7 @@ async def async_setup_platform(
             stationboard, session, limit
         )
         if await test_opendata(opendata):
-            entities.append(SwissPublicTransportStationboardSensor(opendata, session, name, unique_id))
+            entities.append(SwissPublicTransportStationboardSensor(opendata, session, name, unique_id, stationboard))
 
     async_add_entities(entities)
 
@@ -110,7 +110,7 @@ async def async_setup_platform(
 class SwissPublicTransportStationboardSensor(SensorEntity):
     """Implementation of an Swiss public transport stationboard sensor."""
 
-    def __init__(self, opendata, session, name, unique_id):
+    def __init__(self, opendata, session, name, unique_id, stationboard=None):
         """Initialize the sensor."""
         self._opendata = opendata
         self._session = session
@@ -118,7 +118,7 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
         self._remaining_time = ""
         self._attr_unique_id = unique_id
         # Store the stationboard list for later use
-        self._stationboard = opendata._stationboard if hasattr(opendata, '_stationboard') else []
+        self._stationboard = stationboard if stationboard else []
 
     @property
     def name(self):
