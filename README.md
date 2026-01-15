@@ -29,7 +29,7 @@ Original projects:
 
 - Go to HACS → Integrations
 - Click the three dots menu (⋮) → Custom repositories
-- Add this repository: `https://github.com/ndeluigi/swiss-transport-integration`
+- Add this repository: `https://github.com/ndeluigi/lovelace-swiss-commute`
 - Select category: "Integration"
 - Click "Add"
 - Find "Swiss Public Transport Mod" and click "Download"
@@ -41,11 +41,12 @@ The card is included in this repository under `lovelace-card/`.
 
 - Go to HACS → Frontend
 - Click the three dots menu (⋮) → Custom repositories
-- Add this repository: `https://github.com/ndeluigi/swiss-transport-integration`
+- Add this repository: `https://github.com/ndeluigi/lovelace-swiss-commute`
 - Select category: "Lovelace"
 - Click "Add"
 - Find "Swiss Stationboard" and click "Download"
 - Restart Home Assistant
+- Clear browser cache (Ctrl+Shift+R)
 
 ### Step 3: Configure the Sensor
 
