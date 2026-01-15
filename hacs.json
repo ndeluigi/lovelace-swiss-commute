@@ -1,6 +1,7 @@
 {
     "name": "Swiss Commute",
     "filename": "swiss-commute.js",
+    "content_in_root": false,
     "render_readme": true,
     "country": "CH"
 }
