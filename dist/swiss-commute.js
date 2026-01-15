@@ -388,6 +388,13 @@ class SwissPublicTransportCard extends LitElement {
 
     const stops = this._extractStopNames(journey);
     
+    // Debug logging (enable with via_filter_debug: true)
+    if (this._config?.via_filter_debug === true) {
+      console.log('[via_filter] Journey:', journey.name, 'to', journey.to);
+      console.log('[via_filter] Extracted stops:', stops);
+      console.log('[via_filter] Available keys:', Object.keys(journey));
+    }
+    
     // Get options with defaults
     const caseSensitive = this._config?.via_filter_case_sensitive === true;
     const useRegex = this._config?.via_filter_regex !== false; // default true
@@ -395,6 +402,9 @@ class SwissPublicTransportCard extends LitElement {
 
     // If no stops found, use fallback behavior
     if (!stops || stops.length === 0) {
+      if (this._config?.via_filter_debug === true) {
+        console.log('[via_filter] No stops found, fallback:', fallbackInclude);
+      }
       return fallbackInclude;
     }
 
