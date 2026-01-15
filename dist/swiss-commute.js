@@ -220,6 +220,11 @@ class SwissPublicTransportCard extends LitElement {
           eta = "";
       }
       
+      // Debug logging for category filtering
+      if (this._config.category_debug === true) {
+        console.log('[category_debug] Train:', linename, 'Category:', category, 'Destination:', destination, 'Departure:', time);
+      }
+      
       // allow category filtering by regex (S-Bahn, Bus, ...)
       var categoryRegexp = new RegExp(this._config.category || "");
       var plaformFilterRegexp = new RegExp(this._config.platform_filter || "");
