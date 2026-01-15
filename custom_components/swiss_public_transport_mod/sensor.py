@@ -187,51 +187,35 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
         url = f"https://transport.opendata.ch/v1/stationboard?station={quote(station_name)}&limit={limit}"
         
         try:
-            _LOGGER.warning(f"[STOPS DEBUG] Fetching from: {url}")
             async with self._session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
                 if response.status != 200:
-                    _LOGGER.error(f"[STOPS DEBUG] Failed to fetch: HTTP {response.status}")
+                    _LOGGER.warning(f"Failed to fetch enhanced stationboard data: HTTP {response.status}")
                     return
                 
                 data = await response.json()
                 
                 if 'stationboard' not in data:
-                    _LOGGER.error("[STOPS DEBUG] No stationboard in response")
                     return
-                
-                _LOGGER.warning(f"[STOPS DEBUG] Received {len(data['stationboard'])} items from API")
                 
                 # Create a lookup map for enhanced data
                 enhanced_map = {}
-                passlist_count = 0
                 for item in data['stationboard']:
                     # Create a unique key for matching
-                    # The API structure has category/to at root level, departure in stop
                     departure_time = item.get('stop', {}).get('departure')
                     destination = item.get('to')
                     category = item.get('category')
                     number = item.get('number', '')
                     
-                    if 'passList' in item:
-                        passlist_count += 1
-                        _LOGGER.warning(f"[STOPS DEBUG] Found passList with {len(item['passList'])} stops for {category} {number} to {destination}")
-                    
                     if departure_time and destination:
                         key = f"{departure_time}_{destination}_{category}_{number}"
                         enhanced_map[key] = item
-                        _LOGGER.warning(f"[STOPS DEBUG] Created key: {key}")
-                
-                _LOGGER.warning(f"[STOPS DEBUG] Found passList in {passlist_count}/{len(data['stationboard'])} items")
                 
                 # Enhance each journey with stop data
-                matched = 0
                 for journey in self._opendata.journeys:
                     # Create matching key
                     key = f"{journey.get('departure')}_{journey.get('to')}_{journey.get('category')}_{journey.get('number', '')}"
-                    _LOGGER.warning(f"[STOPS DEBUG] Looking for key: {key}")
                     
                     if key in enhanced_map:
-                        matched += 1
                         enhanced_item = enhanced_map[key]
                         
                         # Extract passList if available
@@ -244,17 +228,12 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
                                 if 'station' in stop and 'name' in stop['station']:
                                     stops.append(stop['station']['name'])
                             journey['stops'] = stops
-                            _LOGGER.warning(f"[STOPS DEBUG] Added {len(stops)} stops to {journey.get('category')} {journey.get('number')} to {journey.get('to')}")
                         else:
                             journey['stops'] = []
                             journey['passList'] = []
-                            _LOGGER.warning(f"[STOPS DEBUG] No passList in enhanced item for {key}")
                     else:
                         journey['stops'] = []
                         journey['passList'] = []
-                        _LOGGER.warning(f"[STOPS DEBUG] Key not found in enhanced_map: {key}")
-                
-                _LOGGER.warning(f"[STOPS DEBUG] Enhanced {matched}/{len(self._opendata.journeys)} journeys with stop data")
                         
         except Exception as e:
             _LOGGER.error(f"Failed to enhance journeys with stop data: {e}", exc_info=True)
