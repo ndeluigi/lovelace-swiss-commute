@@ -1,6 +1,7 @@
 {
     "name": "Swiss public transport stationboard",
-    "render_readme" : true,
+    "filename": "swiss-commute.js",
+    "render_readme": true,
     "domains": ["transport", "stationboard"],
     "country": "CH"
   }
