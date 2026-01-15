@@ -348,10 +348,10 @@ class SwissPublicTransportCard extends LitElement {
     // Try stops array
     if (Array.isArray(journey.stops)) {
       for (const stop of journey.stops) {
-        if (stop?.name) {
-          stops.push(stop.name);
-        } else if (typeof stop === "string") {
+        if (typeof stop === "string" && stop && stop !== "null") {
           stops.push(stop);
+        } else if (stop?.name) {
+          stops.push(stop.name);
         }
       }
       return stops;
