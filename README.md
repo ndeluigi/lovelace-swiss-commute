@@ -22,9 +22,21 @@ Note that the current implementation is based on https://pypi.org/project/python
 
 ## Configuration
 
+### Installation
+
+To use this fork with the `via_filter` feature:
+
 - Go to HACS
-- Add a custom repo: https://github.com/neuhausf/lovelace-swiss-stationboard
-- Install the lovelace card
+- Click on "Frontend"
+- Click the three dots menu (top right) and select "Custom repositories"
+- Add this repository: `https://github.com/ndeluigi/lovelace-swiss-commute`
+- Select category: "Lovelace"
+- Click "Add"
+- Find "Swiss Stationboard" in the list and click "Download"
+- Restart Home Assistant
+
+Alternatively, for the original version without `via_filter`:
+- Add the original repo: https://github.com/neuhausf/lovelace-swiss-stationboard
 
 Add a new custom card to your Dashboard:
 
