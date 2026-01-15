@@ -1,6 +1,6 @@
 {
-    "name": "Swiss public transport platform sensor",
-    "render_readme" : true,
-	"country": "CH",
-    "domains": ["transport", "sensor"]
-  }
+    "name": "Swiss Commute",
+    "filename": "swiss-commute.js",
+    "render_readme": true,
+    "country": "CH"
+}
