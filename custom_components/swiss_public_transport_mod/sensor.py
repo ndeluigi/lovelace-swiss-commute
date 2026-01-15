@@ -206,6 +206,7 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
                 passlist_count = 0
                 for item in data['stationboard']:
                     # Create a unique key for matching
+                    # The API structure has category/to at root level, departure in stop
                     departure_time = item.get('stop', {}).get('departure')
                     destination = item.get('to')
                     category = item.get('category')
@@ -218,6 +219,7 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
                     if departure_time and destination:
                         key = f"{departure_time}_{destination}_{category}_{number}"
                         enhanced_map[key] = item
+                        _LOGGER.warning(f"[STOPS DEBUG] Created key: {key}")
                 
                 _LOGGER.warning(f"[STOPS DEBUG] Found passList in {passlist_count}/{len(data['stationboard'])} items")
                 
