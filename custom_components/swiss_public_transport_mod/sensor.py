@@ -117,6 +117,8 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
         self._name = name
         self._remaining_time = ""
         self._attr_unique_id = unique_id
+        # Store the stationboard list for later use
+        self._stationboard = opendata._stationboard if hasattr(opendata, '_stationboard') else []
 
     @property
     def name(self):
@@ -173,9 +175,10 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
         import aiohttp
         from urllib.parse import quote
         
-        # Get station name
-        station_name = self._opendata.stationboard[0] if self._opendata.stationboard else None
+        # Get station name from stored stationboard list
+        station_name = self._stationboard[0] if self._stationboard and len(self._stationboard) > 0 else None
         if not station_name:
+            _LOGGER.warning("No station name available for enhancing stop data")
             return
         
         # Build API URL with higher limit to get detailed data
