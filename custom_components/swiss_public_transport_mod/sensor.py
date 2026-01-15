@@ -187,19 +187,19 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
         url = f"https://transport.opendata.ch/v1/stationboard?station={quote(station_name)}&limit={limit}&fields[]=stationboard/passList"
         
         try:
-            _LOGGER.info(f"Fetching enhanced stationboard data from: {url}")
+            _LOGGER.warning(f"[STOPS DEBUG] Fetching from: {url}")
             async with self._session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
                 if response.status != 200:
-                    _LOGGER.warning(f"Failed to fetch enhanced stationboard data: HTTP {response.status}")
+                    _LOGGER.error(f"[STOPS DEBUG] Failed to fetch: HTTP {response.status}")
                     return
                 
                 data = await response.json()
                 
                 if 'stationboard' not in data:
-                    _LOGGER.warning("No stationboard data in API response")
+                    _LOGGER.error("[STOPS DEBUG] No stationboard in response")
                     return
                 
-                _LOGGER.info(f"Received {len(data['stationboard'])} items from enhanced API")
+                _LOGGER.warning(f"[STOPS DEBUG] Received {len(data['stationboard'])} items from API")
                 
                 # Create a lookup map for enhanced data
                 enhanced_map = {}
@@ -213,18 +213,20 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
                     
                     if 'passList' in item:
                         passlist_count += 1
+                        _LOGGER.warning(f"[STOPS DEBUG] Found passList with {len(item['passList'])} stops for {category} {number} to {destination}")
                     
                     if departure_time and destination:
                         key = f"{departure_time}_{destination}_{category}_{number}"
                         enhanced_map[key] = item
                 
-                _LOGGER.info(f"Found passList in {passlist_count}/{len(data['stationboard'])} items")
+                _LOGGER.warning(f"[STOPS DEBUG] Found passList in {passlist_count}/{len(data['stationboard'])} items")
                 
                 # Enhance each journey with stop data
                 matched = 0
                 for journey in self._opendata.journeys:
                     # Create matching key
                     key = f"{journey.get('departure')}_{journey.get('to')}_{journey.get('category')}_{journey.get('number', '')}"
+                    _LOGGER.warning(f"[STOPS DEBUG] Looking for key: {key}")
                     
                     if key in enhanced_map:
                         matched += 1
@@ -240,15 +242,17 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
                                 if 'station' in stop and 'name' in stop['station']:
                                     stops.append(stop['station']['name'])
                             journey['stops'] = stops
-                            _LOGGER.debug(f"Added {len(stops)} stops to journey {journey.get('name')} to {journey.get('to')}")
+                            _LOGGER.warning(f"[STOPS DEBUG] Added {len(stops)} stops to {journey.get('category')} {journey.get('number')} to {journey.get('to')}")
                         else:
                             journey['stops'] = []
                             journey['passList'] = []
+                            _LOGGER.warning(f"[STOPS DEBUG] No passList in enhanced item for {key}")
                     else:
                         journey['stops'] = []
                         journey['passList'] = []
+                        _LOGGER.warning(f"[STOPS DEBUG] Key not found in enhanced_map: {key}")
                 
-                _LOGGER.info(f"Enhanced {matched}/{len(self._opendata.journeys)} journeys with stop data")
+                _LOGGER.warning(f"[STOPS DEBUG] Enhanced {matched}/{len(self._opendata.journeys)} journeys with stop data")
                         
         except Exception as e:
             _LOGGER.error(f"Failed to enhance journeys with stop data: {e}", exc_info=True)
