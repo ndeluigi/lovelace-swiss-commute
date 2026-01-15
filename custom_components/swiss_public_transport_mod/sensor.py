@@ -182,9 +182,9 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
             return
         
         # Build API URL with higher limit to get detailed data
-        # Request passList explicitly using fields parameter
+        # Don't use fields parameter as it filters out other necessary data
         limit = len(self._opendata.journeys) + 5  # Get a few extra to ensure we have all
-        url = f"https://transport.opendata.ch/v1/stationboard?station={quote(station_name)}&limit={limit}&fields[]=stationboard/passList"
+        url = f"https://transport.opendata.ch/v1/stationboard?station={quote(station_name)}&limit={limit}"
         
         try:
             _LOGGER.warning(f"[STOPS DEBUG] Fetching from: {url}")
