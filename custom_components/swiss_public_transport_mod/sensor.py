@@ -161,9 +161,78 @@ class SwissPublicTransportStationboardSensor(SensorEntity):
         try:
             self._opendata.journeys = []
             await self._opendata.async_get_data()
+            
+            # Enhance journey data with intermediate stops
+            await self._enhance_with_stops()
 
         except OpendataTransportError:
             _LOGGER.error("Unable to retrieve data from transport.opendata.ch")
+    
+    async def _enhance_with_stops(self):
+        """Fetch detailed stationboard data with passList for all journeys."""
+        import aiohttp
+        from urllib.parse import quote
+        
+        # Get station name
+        station_name = self._opendata.stationboard[0] if self._opendata.stationboard else None
+        if not station_name:
+            return
+        
+        # Build API URL with higher limit to get detailed data
+        limit = len(self._opendata.journeys) + 5  # Get a few extra to ensure we have all
+        url = f"https://transport.opendata.ch/v1/stationboard?station={quote(station_name)}&limit={limit}"
+        
+        try:
+            async with self._session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                if response.status != 200:
+                    _LOGGER.warning(f"Failed to fetch enhanced stationboard data: HTTP {response.status}")
+                    return
+                
+                data = await response.json()
+                
+                if 'stationboard' not in data:
+                    return
+                
+                # Create a lookup map for enhanced data
+                enhanced_map = {}
+                for item in data['stationboard']:
+                    # Create a unique key for matching
+                    departure_time = item.get('stop', {}).get('departure')
+                    destination = item.get('to')
+                    category = item.get('category')
+                    number = item.get('number', '')
+                    
+                    if departure_time and destination:
+                        key = f"{departure_time}_{destination}_{category}_{number}"
+                        enhanced_map[key] = item
+                
+                # Enhance each journey with stop data
+                for journey in self._opendata.journeys:
+                    # Create matching key
+                    key = f"{journey.get('departure')}_{journey.get('to')}_{journey.get('category')}_{journey.get('number', '')}"
+                    
+                    if key in enhanced_map:
+                        enhanced_item = enhanced_map[key]
+                        
+                        # Extract passList if available
+                        if 'passList' in enhanced_item:
+                            journey['passList'] = enhanced_item['passList']
+                            
+                            # Extract stop names from passList
+                            stops = []
+                            for stop in enhanced_item['passList']:
+                                if 'station' in stop and 'name' in stop['station']:
+                                    stops.append(stop['station']['name'])
+                            journey['stops'] = stops
+                        else:
+                            journey['stops'] = []
+                            journey['passList'] = []
+                    else:
+                        journey['stops'] = []
+                        journey['passList'] = []
+                        
+        except Exception as e:
+            _LOGGER.warning(f"Failed to enhance journeys with stop data: {e}")
 
 class SwissPublicTransportSensor(Entity):
     """Implementation of an Swiss public transport sensor."""
